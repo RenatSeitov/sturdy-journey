@@ -1,0 +1,35 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: passwrod
+      POSTGRES_DB: temp_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=passwrod
+      - POSTGRES_DB=temp_db
+      - POSTGRES_HOST=db
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+
+volumes:
+  postgres_data:
